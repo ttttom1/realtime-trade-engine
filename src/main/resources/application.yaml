@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: api-service
+  datasource:
+    # 도커에 띄운 MySQL로 연결 (내 컴퓨터에서 실행하므로 localhost)
+    url: jdbc:mysql://localhost:3307/stock_db?allowPublicKeyRetrieval=true&useSSL=false
+    username: stock_db_user
+    password: stock_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6380
+  jpa:
+    hibernate:
+      ddl-auto: update # 테이블 자동 생성
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name} # 이 프로젝트만의 지표임을 명시

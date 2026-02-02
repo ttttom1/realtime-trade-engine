@@ -83,4 +83,20 @@ public class OrderBook {
             log.info("📌[호가 등록] {}원 잔여 수량 {}주", newOrder.getPrice(), newOrder.getQuantity());
         }
     }
+
+    //
+    public Map<BigDecimal, Integer> getAggregatedSnapShot(boolean isBuySide) {
+        //내부 TreeMap을 복사해서 반환함으로써 원본 데이터를 보호합니다.
+        TreeMap<BigDecimal, List<Order>> targetMap = isBuySide ? buyOrders : sellOrders;
+
+        Map<BigDecimal, Integer> summary = new TreeMap<>(isBuySide ? Collections.reverseOrder(): null);
+
+        targetMap.forEach((price, orders) -> {
+            int totalQuantity = orders.stream()
+                    .mapToInt(Order::getQuantity)
+                    .sum();
+            summary.put(price, totalQuantity);
+        });
+        return summary;
+    }
 }

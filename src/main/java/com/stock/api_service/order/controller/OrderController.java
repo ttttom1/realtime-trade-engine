@@ -1,7 +1,7 @@
-package com.stock.api_service.controller;
+package com.stock.api_service.order.controller;
 
-import com.stock.api_service.domain.Order;
-import com.stock.api_service.dto.OrderRequest;
+import com.stock.api_service.order.entity.Order;
+import com.stock.api_service.order.dto.OrderRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

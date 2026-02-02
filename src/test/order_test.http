@@ -1,0 +1,25 @@
+### 1. 매도 주문 생성 (user02가 70,000원에 10주 판매)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{
+  "memberId": "user02",
+  "stockCode": "SAMSUNG",
+  "price": 70000,
+  "quantity": 10,
+  "type": "SELL"
+}
+
+### 2. 매수 주문 생성 (user01이 70,000원에 10주 구매 -> 즉시 체결)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+
+{
+  "memberId": "user01",
+  "stockCode": "SAMSUNG",
+  "price": 70000,
+  "quantity": 10,
+  "type": "BUY"
+}
+
+

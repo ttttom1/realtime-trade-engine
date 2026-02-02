@@ -1,9 +1,8 @@
-package com.stock.api_service.service;
+package com.stock.api_service.order.service;
 
-import com.stock.api_service.domain.Order;
-import com.stock.api_service.domain.OrderType;
-import lombok.extern.log4j.Log4j;
-import lombok.extern.log4j.Log4j2;
+import com.stock.api_service.order.entity.Order;
+import com.stock.api_service.order.entity.OrderType;
+import com.stock.api_service.matching.entity.Trade;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -19,15 +18,20 @@ public class OrderBook {
     private final TreeMap<BigDecimal, List<Order>> sellOrders = new TreeMap<>();
 
     //주문 추가 및 매칭 로직이 여기 들어갈 예정입니다.
-    public void process(Order newOrder) {
+    public List<Trade> process(Order newOrder) {
+        if (newOrder.getQuantity() <= 0) return Collections.emptyList(); //수량 0인 주문 밥어
+
+        List<Trade> trades = new ArrayList<>();
         if(newOrder.getType() == OrderType.BUY) {
-            matchOrder(newOrder,sellOrders, buyOrders);
+            matchOrder(newOrder,sellOrders, buyOrders, trades);
         } else {
-            matchOrder(newOrder, buyOrders, sellOrders);
+            matchOrder(newOrder, buyOrders, sellOrders, trades);
         }
+        return trades;
     }
 
-    private void matchOrder(Order newOrder, TreeMap<BigDecimal, List<Order>> oppositeSide, TreeMap<BigDecimal, List<Order>> sameSide) {
+    private void matchOrder(Order newOrder, TreeMap<BigDecimal, List<Order>> oppositeSide, TreeMap<BigDecimal,
+            List<Order>> sameSide, List<Trade> trades) {
         log.info("🔍 매칭 시작: {} 주문 {}원", newOrder.getType(), newOrder.getPrice());
 
         while (newOrder.getQuantity() > 0 && !oppositeSide.isEmpty()) {
@@ -56,6 +60,14 @@ public class OrderBook {
                         bestOppositePrice, tradeQuantity,
                         (newOrder.getType() == OrderType.BUY ? newOrder.getMemberId() : targetOrder.getMemberId()),
                         (newOrder.getType() == OrderType.SELL ? newOrder.getMemberId() : targetOrder.getMemberId()));
+                Trade trade = Trade.builder()
+                        .stockCode(newOrder.getStockCode())
+                        .price(bestOppositePrice)
+                        .quantity(tradeQuantity)
+                        .buyMemberId(newOrder.getType() == OrderType.BUY ? newOrder.getMemberId() : targetOrder.getMemberId())
+                        .sellMemberId(newOrder.getType() == OrderType.SELL ? newOrder.getMemberId() : targetOrder.getMemberId())
+                        .build();
+                trades.add(trade);
 
                 if (targetOrder.getQuantity() == 0) {
                     iterator.remove();
@@ -70,7 +82,5 @@ public class OrderBook {
             sameSide.computeIfAbsent(newOrder.getPrice(), k -> new ArrayList<>()).add(newOrder);
             log.info("📌[호가 등록] {}원 잔여 수량 {}주", newOrder.getPrice(), newOrder.getQuantity());
         }
-
-
     }
 }

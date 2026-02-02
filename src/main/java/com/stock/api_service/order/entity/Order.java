@@ -1,4 +1,4 @@
-package com.stock.api_service.domain;
+package com.stock.api_service.order.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;

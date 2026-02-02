@@ -1,6 +1,6 @@
-package com.stock.api_service.config;
+package com.stock.api_service.common.config;
 
-import com.stock.api_service.domain.Order;
+import com.stock.api_service.order.entity.Order;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

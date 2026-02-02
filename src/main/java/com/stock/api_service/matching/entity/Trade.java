@@ -1,4 +1,4 @@
-package com.stock.api_service.entity;
+package com.stock.api_service.matching.entity;
 
 import io.lettuce.core.dynamic.annotation.CommandNaming;
 import jakarta.persistence.*;
@@ -24,6 +24,9 @@ public class Trade {
     private String stockCode;
     private BigDecimal price;
     private Integer quantity;
+
+    private String buyMemberId;
+    private String sellMemberId;
 
     private LocalDateTime createdAt;
 

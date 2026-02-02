@@ -1,11 +1,15 @@
-package com.stock.api_service.service;
+package com.stock.api_service.matching.service;
 
-import com.stock.api_service.domain.Order;
+import com.stock.api_service.order.entity.Order;
+import com.stock.api_service.matching.entity.Trade;
+import com.stock.api_service.matching.repository.TradeRepository;
+import com.stock.api_service.order.service.OrderBook;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 @Service
@@ -13,8 +17,10 @@ import java.util.concurrent.BlockingQueue;
 @RequiredArgsConstructor
 public class MatchingEngine {
 
+    private final TradeRepository tradeRepository;
     private final BlockingQueue<Order> orderQueue;
     private final OrderBook orderBook;
+    private final TradeService tradeService;
 
     @PostConstruct
     public void startEngine() {
@@ -39,10 +45,15 @@ public class MatchingEngine {
         engineThread.start();
     }
     private void processOrder(Order order){
-        log.info("🔔 [체결 시도] 사용자: {}, 종목: {}, 가격: {}. 수량: {}",
-                order.getMemberId(), order.getStockCode(), order.getPrice(), order.getQuantity());
+        //수량 0 인 주문 무시
+        if (order.getQuantity() <= 0) return;
 
-        //로그 대신 실질적인 매칭 프로세스 시작
-        orderBook.process(order);
+        // 1. 매칭 실행 및 체결 리스트 확보
+        List<Trade> trades = orderBook.process(order);
+
+        // 2. 체결 내역이 있다면 일괄 저장 (Bulk Insert)
+        if (!trades.isEmpty()) {
+            tradeService.saveAndSettle(trades);
+        }
     }
 }

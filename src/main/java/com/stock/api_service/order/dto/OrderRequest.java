@@ -1,6 +1,6 @@
-package com.stock.api_service.dto;
+package com.stock.api_service.order.dto;
 
-import com.stock.api_service.domain.OrderType;
+import com.stock.api_service.order.entity.OrderType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

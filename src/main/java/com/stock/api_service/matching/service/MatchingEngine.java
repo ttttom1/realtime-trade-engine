@@ -2,11 +2,12 @@ package com.stock.api_service.matching.service;
 
 import com.stock.api_service.order.entity.Order;
 import com.stock.api_service.matching.entity.Trade;
-import com.stock.api_service.matching.repository.TradeRepository;
+import com.stock.api_service.matching.event.TradesCompletedEvent;
 import com.stock.api_service.order.service.OrderBook;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,10 +18,9 @@ import java.util.concurrent.BlockingQueue;
 @RequiredArgsConstructor
 public class MatchingEngine {
 
-    private final TradeRepository tradeRepository;
     private final BlockingQueue<Order> orderQueue;
     private final OrderBook orderBook;
-    private final TradeService tradeService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PostConstruct
     public void startEngine() {
@@ -31,6 +31,9 @@ public class MatchingEngine {
                 try {
                     //1. 큐에서 주문이 들어올 때까지 대기하면 하나를 꺼냄
                     Order order = orderQueue.take();
+
+                    // 디버그: Queue에서 꺼낸 직후 memberId 확인
+                    log.info(">>> [ENGINE-DEBUG] Queue에서 꺼낸 Order - memberId: {}, type: {}", order.getMemberId(), order.getType());
 
                     // 2. 체결 로직 수행 (지금은 로그로 대체)
                     processOrder(order);
@@ -51,9 +54,9 @@ public class MatchingEngine {
         // 1. 매칭 실행 및 체결 리스트 확보
         List<Trade> trades = orderBook.process(order);
 
-        // 2. 체결 내역이 있다면 일괄 저장 (Bulk Insert)
+        // 2. 체결 내역이 있다면 '서비스 직접 호출' 대신 '이벤트 발행'
         if (!trades.isEmpty()) {
-            tradeService.saveAndSettle(trades);
+            eventPublisher.publishEvent(new TradesCompletedEvent(trades));
         }
     }
 }

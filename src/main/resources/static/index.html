@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>실시간 체결 현황</title>
+    <!-- Bootstrap for basic styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 1rem; }
+        #trades-container {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            height: 80vh;
+            overflow-y: auto;
+        }
+        .trade-buy { color: #d32f2f; }  /* Red for BUY taker */
+        .trade-sell { color: #2e7d32; } /* Green for SELL taker */
+    </style>
+</head>
+<body>
+    <h2>실시간 체결 현황 (/topic/trades)</h2>
+    <div id="trades-container">
+        <p>서버에 연결 중...</p>
+    </div>
+
+    <!-- SockJS and Stomp.js libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        const container = document.getElementById('trades-container');
+
+        function connect() {
+            // 1. SockJS로 WebSocket 엔드포인트(/ws)에 연결합니다.
+            const socket = new SockJS('/ws');
+            const stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                container.innerHTML = '<p>서버에 연결되었습니다. 체결 대기 중...</p>';
+
+                // 2. '/topic/trades' 토픽을 구독합니다.
+                stompClient.subscribe('/topic/trades', function (message) {
+                    // 3. 메시지 수신 시 처리할 로직
+                    const trade = JSON.parse(message.body);
+                    showTrade(trade);
+                });
+            }, function(error) {
+                console.error('STOMP error', error);
+                container.innerHTML = '<p class="text-danger">연결 오류 발생. 5초 후 재시도합니다...</p>';
+                setTimeout(connect, 5000);
+            });
+        }
+
+        function showTrade(trade) {
+            const p = document.createElement('p');
+            const tradeClass = trade.takerType === 'BUY' ? 'trade-buy' : 'trade-sell';
+            p.className = tradeClass;
+            p.textContent = `[${trade.tradeAt}] ${trade.stockCode} - Price: ${trade.price}, Qty: ${trade.quantity}, Taker: ${trade.takerType}`;
+            
+            // 새 메시지를 맨 위에 추가
+            container.prepend(p);
+        }
+
+        // 페이지 로드 시 연결 시작
+        connect();
+    </script>
+</body>
+</html>

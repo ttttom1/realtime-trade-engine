@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "orders") // MySQL의 예약어 'order'와 충돌 방지
 public class Order {
 
     @Id
@@ -48,5 +46,10 @@ public class Order {
             throw new IllegalArgumentException("체결 수량이 주문 수량보다 많을 수 없습니다.");
         }
         this.quantity -= amount;
+    }
+
+    // Lombok @Getter 대신 명시적으로 선언
+    public String getMemberId() {
+        return this.memberId;
     }
 }

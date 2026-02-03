@@ -14,3 +14,6 @@ WHERE id IN ('user01', 'user02');
 
 -- 체결 내역 확인 쿼리
 SELECT * FROM trades ORDER BY created_at DESC;
+
+
+SELECT  * FROM members;

@@ -52,22 +52,17 @@ public class OrderBook {
                 Order targetOrder = iterator.next();
                 int tradeQuantity = Math.min(newOrder.getQuantity(),targetOrder.getQuantity());
 
+                // 상태가 변하기 전에 온전한 Order 객체들로 Trade를 먼저 생성
+                Trade trade = Trade.of(newOrder, targetOrder, tradeQuantity);
+                trades.add(trade);
+
+
                 //체결 실행
                 newOrder.reduceQuantity(tradeQuantity);
                 targetOrder.reduceQuantity(tradeQuantity);
 
                 log.info("✅ [체결 완료] 가격: {}, 수량: {}, 매수자: {}, 매도자: {}",
-                        bestOppositePrice, tradeQuantity,
-                        (newOrder.getType() == OrderType.BUY ? newOrder.getMemberId() : targetOrder.getMemberId()),
-                        (newOrder.getType() == OrderType.SELL ? newOrder.getMemberId() : targetOrder.getMemberId()));
-                Trade trade = Trade.builder()
-                        .stockCode(newOrder.getStockCode())
-                        .price(bestOppositePrice)
-                        .quantity(tradeQuantity)
-                        .buyMemberId(newOrder.getType() == OrderType.BUY ? newOrder.getMemberId() : targetOrder.getMemberId())
-                        .sellMemberId(newOrder.getType() == OrderType.SELL ? newOrder.getMemberId() : targetOrder.getMemberId())
-                        .build();
-                trades.add(trade);
+                        bestOppositePrice, tradeQuantity, trade.getBuyMemberId(), trade.getSellMemberId());
 
                 if (targetOrder.getQuantity() == 0) {
                     iterator.remove();

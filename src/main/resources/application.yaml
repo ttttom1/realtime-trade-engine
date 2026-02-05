@@ -15,6 +15,9 @@ spring:
     hibernate:
       ddl-auto: create-drop # [수정] 시작 시 모든 테이블 삭제/재생성
     show-sql: true
+  sql:
+    init:
+      mode: always
 
 management:
   endpoints:

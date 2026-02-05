@@ -17,6 +17,6 @@ services:
     # 2. 메시지 대기열 (Redis)
     redis:
       image: redis:latest
-      container_name: redis-stock
+      container_name: stock-redis
       ports:
         - "6380:6379"

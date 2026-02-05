@@ -94,4 +94,11 @@ public class OrderBook {
         });
         return summary;
     }
+
+
+    public void clear() {
+        log.info("🧹 OrderBook을 초기화 합니다.");
+        buyOrders.clear();
+        sellOrders.clear();
+    }
 }
